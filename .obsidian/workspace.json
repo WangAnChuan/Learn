@@ -4,20 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "94aa6cdde51fde4e",
+        "id": "07ba860f9c65229f",
         "type": "tabs",
         "children": [
           {
-            "id": "9266733ee5e65fd1",
+            "id": "48caa15601328fc2",
             "type": "leaf",
             "state": {
-              "type": "bases",
+              "type": "markdown",
               "state": {
-                "file": "未命名.base",
-                "viewName": "表格"
+                "file": "YOLO训练/12-09.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-table",
-              "title": "未命名"
+              "icon": "lucide-file",
+              "title": "12-09"
             }
           }
         ]
@@ -191,12 +192,18 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "3d6f31cdeee6412d",
+  "active": "48caa15601328fc2",
   "lastOpenFiles": [
-    "README.md",
+    "YOLO训练/assets/12-09/file-20251209230019217.png",
+    "YOLO训练/assets/12-09/file-20251209230001197.png",
+    "YOLO训练/assets/12-09",
+    "YOLO训练/assets",
     "assets/README/file-20251118155108687.png",
+    "YOLO训练/12-09.md",
+    "YOLO训练",
+    "README.md",
+    "未命名.base",
     "assets/README",
-    "assets",
-    "未命名.base"
+    "assets"
   ]
 }
