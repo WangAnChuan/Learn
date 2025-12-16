@@ -23,12 +23,14 @@
             "id": "83a6208a46b4521d",
             "type": "leaf",
             "state": {
-              "type": "release-notes",
+              "type": "markdown",
               "state": {
-                "currentVersion": "1.10.6"
+                "file": "SpringBoot/Start.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-book-up",
-              "title": "版本说明 1.10.6"
+              "icon": "lucide-file",
+              "title": "Start"
             }
           }
         ],
@@ -205,6 +207,8 @@
   },
   "active": "83a6208a46b4521d",
   "lastOpenFiles": [
+    "SpringBoot/Start.md",
+    "SpringBoot",
     "YOLO训练/assets/12-09/file-20251209230019217.png",
     "YOLO训练/assets/12-09/file-20251209230001197.png",
     "YOLO训练/12-09.md",
