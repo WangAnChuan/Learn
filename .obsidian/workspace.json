@@ -25,12 +25,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "SpringBoot/Start.md",
+                "file": "YOLO训练/module.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Start"
+              "title": "module"
             }
           }
         ],
@@ -207,7 +207,10 @@
   },
   "active": "83a6208a46b4521d",
   "lastOpenFiles": [
+    "YOLO训练/assets/module/file-20251219124902972.png",
+    "YOLO训练/assets/module",
     "SpringBoot/Start.md",
+    "YOLO训练/module.md",
     "SpringBoot",
     "YOLO训练/assets/12-09/file-20251209230019217.png",
     "YOLO训练/assets/12-09/file-20251209230001197.png",
