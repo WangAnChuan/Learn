@@ -25,12 +25,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "SpringBoot/Start.md",
+                "file": "SCI素材/引言和摘要：YOLO-FCE.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Start"
+              "title": "引言和摘要：YOLO-FCE"
             }
           }
         ],
@@ -207,10 +207,12 @@
   },
   "active": "83a6208a46b4521d",
   "lastOpenFiles": [
+    "SpringBoot/Start.md",
+    "SCI素材/引言和摘要：YOLO-FCE.md",
+    "SCI素材",
     "YOLO训练/module.md",
     "YOLO训练/assets/module/file-20251219124902972.png",
     "YOLO训练/assets/module",
-    "SpringBoot/Start.md",
     "SpringBoot",
     "YOLO训练/assets/12-09/file-20251209230019217.png",
     "YOLO训练/assets/12-09/file-20251209230001197.png",
