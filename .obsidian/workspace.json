@@ -32,9 +32,21 @@
               "icon": "lucide-file",
               "title": "引言和摘要：YOLO-FCE"
             }
+          },
+          {
+            "id": "f1957f433067c4e9",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.11.7"
+              },
+              "icon": "lucide-book-up",
+              "title": "版本说明 1.11.7"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -195,17 +207,17 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:新建数据库": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "daily-notes:打开/创建今天的日记": false,
       "templates:插入模板": false,
       "command-palette:打开命令面板": false,
-      "bases:创建新数据库": false,
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "83a6208a46b4521d",
+  "active": "f1957f433067c4e9",
   "lastOpenFiles": [
     "SpringBoot/Start.md",
     "SCI素材/引言和摘要：YOLO-FCE.md",
