@@ -53,7 +53,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "未命名.md",
+                "file": "SCI素材/未命名.md",
                 "mode": "source",
                 "source": false
               },
@@ -119,8 +119,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "89d492b342b0f1a8",
@@ -236,8 +235,8 @@
   },
   "active": "36ca44a2002b0fd3",
   "lastOpenFiles": [
-    "SCI素材/未命名.md",
     "未命名.md",
+    "SCI素材/未命名.md",
     "SCI素材/引言和摘要：YOLO-FCE.md",
     "SpringBoot/Start.md",
     "SCI素材",
