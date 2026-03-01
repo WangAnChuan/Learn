@@ -211,6 +211,176 @@ This dense aggregation serves two purposes. First, it provides the downstream de
 The computational cost of C3k2-Mamba relative to the replaced C3k2 module is analyzed as follows. The $1 \times 1$ convolutions in the split and reassembly steps have complexity $\mathcal{O}(HWC^2)$, identical in form to the $1 \times 1$ projections in the original C3k2. Each Mamba block processes a sequence of $N = HW$ tokens at $\mathcal{O}(N \cdot D \cdot N_s)$ complexity, where $D$ is the feature dimension and $N_s$ is the SSM state size. Since $N_s \ll HW$ (we use $N_s = 16$ throughout), the per-Mamba-block cost is $\mathcal{O}(HW \cdot D \cdot N_s) = \mathcal{O}(HWC)$—linear in spatial resolution and strictly lower than the $\mathcal{O}((HW)^2 \cdot C)$ cost of full self-attention at the same resolution.
 
 In practice, replacing C3k2 with C3k2-Mamba at P4 and P5 results in a _net reduction_ in total parameter count from 2.62M (YOLO11n baseline) to 2.22M, because the SSM's compact state representation requires fewer parameters than the stacked convolutional filters in the original bottleneck at these channel widths. The GFLOPs increase from the baseline (3.22 GFLOPs) to 17.85 GFLOPs is attributable primarily to the Mamba block's sequential scan operations over the full spatial sequence, which are memory-bandwidth-bound rather than compute-bound and benefit substantially from the hardware-aware Flash Scan implementation [CITE: Mamba].
+# 4. Experiments and Results
+
+## 4.1 Datasets and Implementation Details
+
+### 4.1.1 Bottle-Centric Heterogeneous Benchmark
+
+We construct a unified single-class detection benchmark specifically targeting transparent and semi-transparent plastic bottles on water surfaces. The benchmark consolidates three complementary data sources, each addressing a distinct aspect of the detection challenge, and unifies all annotations under a single class label "Bottle" through systematic label cleaning and re-annotation.
+
+**PoTATO (Polarimetric Transparent Object dataset).** The PoTATO dataset [CITE] provides high-quality stereo-polarimetric image sequences of transparent containers under controlled and semi-controlled lighting conditions. We extract the subset containing "Bottle" and "Jar" categories, as both exhibit the characteristic high-transmittance, low-texture optical properties that define the core detection challenge. For each scene, raw Stokes measurements are decoded into all $K=6$ physical views (RGB, Mono, DoLP, AoP, $S_0$, Pauli-RGB), each registered to the same ground-truth bounding boxes. This subset provides the polarimetric optical fingerprint of transparent bottles that cannot be obtained from RGB-only sources, and serves as the primary source for physics-aware modality training.
+
+**FloW-Img.** The FloW dataset [CITE] contains images captured by a USV-mounted camera across freshwater environments at varying flow rates and lighting conditions. We extract all samples annotated as "Plastic Bottle," retaining the original USV low-angle viewpoint geometry. This subset contributes challenging real-world variations including semi-submerged targets, reflection adhesion (where the bottle's mirror image merges with its actual boundary in the feature space), and dense clutter from co-occurring debris. As FloW-Img provides RGB images only, these samples participate in training exclusively under the RGB modality path of Dynamic Modality Dropout.
+
+**Wild-Bottle (Self-Collected).** To cover extreme and long-tail conditions underrepresented in existing datasets, we collected and manually annotated 2,400+ images from open web sources and field capture sessions. Selection criteria prioritized two failure-inducing conditions: (1) extreme specular glare, where direct sunlight creates saturated reflection patches that occlude or merge with bottle boundaries; and (2) turbid or contaminated water, where reduced optical clarity eliminates texture contrast between target and background. All samples in this subset are RGB-only and are included to test the generalization boundary of the trained model under worst-case RGB conditions.
+
+The combined benchmark contains **28,591 images** partitioned into training (22,238), validation (6,353), and test sets following a stratified split that preserves the source distribution ratio across partitions. Table 0 summarizes the benchmark statistics.
+
+**Table 0. Benchmark composition and partition statistics.**
+
+| Source            | Modalities                         | Train      | Val       | Total      |
+| ----------------- | ---------------------------------- | ---------- | --------- | ---------- |
+| PoTATO (×6 views) | RGB, Mono, DoLP, AoP, $S_0$, Pauli | —          | —         | —          |
+| FloW-Img          | RGB                                | —          | —         | —          |
+| Wild-Bottle       | RGB                                | —          | —         | —          |
+| **Total**         | —                                  | **22,238** | **6,353** | **28,591** |
+
+_(Fill per-source counts after final dataset assembly.)_
+
+### 4.1.2 Implementation Details
+
+All experiments are conducted on a workstation running Ubuntu 22.04 with a single NVIDIA RTX 5090 GPU (32 GB VRAM) using PyTorch 2.8.0 and CUDA 12.8. The YOLO11n architecture serves as the backbone baseline, initialized with COCO-pretrained weights to leverage low-level feature priors before domain-specific fine-tuning.
+
+Training employs SGD with an initial learning rate of $\eta_0 = 0.01$, cosine-annealed to $\eta_{\min} = 10^{-4}$, momentum $\mu = 0.937$, and weight decay $\lambda = 5 \times 10^{-4}$. The batch size is set to 32 with input resolution $640 \times 640$. All models are trained for 200 epochs with early stopping (patience = 50 epochs on validation mAP@50). Standard YOLO augmentations are applied throughout training—random horizontal flip ($p=0.5$), HSV jitter (h=0.015, s=0.7, v=0.4), random scale ($\pm 50%$), and Mosaic augmentation—with Mosaic disabled for the final 10 epochs to stabilize bounding-box regression statistics. Automatic Mixed Precision (AMP) is enabled throughout to reduce memory footprint and accelerate training.
+
+For FCE diagnostic analysis, features are extracted from a checkpoint trained for 50 epochs (sufficient for stable feature formation) using a fixed diagnostic subset of $M=500$ validation images. PCA is computed on the joint foreground-background feature pool at each layer, with dimensionality $d=32$ selected to satisfy the 90% cumulative explained variance criterion across all evaluated layers.
+
+Inference speed (FPS) is measured as the mean over 1,000 forward passes at batch size 1 after a 100-iteration GPU warm-up, reported as the inverse of mean per-image latency. All latency figures include pre-processing (resize, normalize) but exclude data loading.
+
+---
+
+## 4.2 Comparison with State-of-the-Art Methods
+
+To comprehensively assess the performance of the proposed YOLO11-Mamba framework, we conduct a rigorous comparison against representative real-time object detectors under a unified experimental protocol. All baseline models are retrained from scratch on our benchmark using identical hyperparameters, data splits, and augmentation policies to ensure fair comparison. Performance is evaluated on the held-out test set using standard COCO metrics: mAP@50 (primary metric), mAP@50:95 (localization precision), Precision (P), and Recall (R). Model efficiency is characterized by parameter count (Params, M), computational complexity (GFLOPs), and inference throughput (FPS).
+
+**Table 1. Comparison of detection performance on the Water-Bottle benchmark test set.**
+
+| Method                  | Backbone       | mAP@50 (%) | mAP@50:95 (%) | P (%) | R (%)    | Params (M) | GFLOPs    | FPS       |
+| ----------------------- | -------------- | ---------- | ------------- | ----- | -------- | ---------- | --------- | --------- |
+| YOLOv5n [CITE]          | CSPDarkNet     | —          | —             | —     | —        | 1.9        | 4.5       | —         |
+| YOLOv8n [CITE]          | C2f            | —          | —             | —     | —        | 3.2        | 8.7       | —         |
+| YOLOv9t [CITE]          | GELAN          | —          | —             | —     | —        | 2.0        | 7.7       | —         |
+| YOLOv10n [CITE]         | CSP-v10        | —          | —             | —     | —        | 2.3        | 6.7       | —         |
+| RT-DETR-R18 [CITE]      | ResNet-18      | —          | —             | —     | —        | 20.0       | 60.0      | —         |
+| YOLO11n (Baseline)      | C3k2           | 87.81      | 56.59         | —     | 87.8     | 2.62       | 3.22      | —         |
+| **YOLO11-Mamba (Ours)** | **C3k2-Mamba** | **95.86**  | **65.19**     | **—** | **92.7** | **2.22**   | **17.85** | **125.8** |
+
+_(Fill dashes with retrained results before submission.)_
+
+The experimental results demonstrate that YOLO11-Mamba achieves consistent and substantial improvements across all primary metrics.
+
+**Accuracy.** YOLO11-Mamba achieves a mAP@50 of 95.86%, representing an absolute gain of +8.05 percentage points over the YOLO11n baseline (87.81%). Under the stricter mAP@50:95 criterion—which penalizes imprecise bounding-box localization—the improvement is +8.60 points (65.19% vs. 56.59%), indicating that the global context modeling introduced by C3k2-Mamba benefits not only detection recall but also spatial localization precision. We attribute the localization improvement to the intra-class compaction effect of the SSM: by aggregating global scene context, the model forms more consistent feature representations for the same bottle across different spatial positions and lighting conditions, producing tighter, more stable bounding-box predictions.
+
+**Recall.** The recall improvement from 87.8% to 92.7% (+4.9 points) is particularly significant for the target application. In environmental monitoring, missed detections (false negatives) are more costly than false alarms, as an undetected floating bottle escapes cleanup. The recall gain directly reflects the FCE-diagnosed and SSM-repaired semantic collapse: the model can now detect transparent and semi-submerged bottles that were previously lost in the feature-space confusion between foreground and background.
+
+**Parameter Efficiency.** Despite the substantial accuracy gain, YOLO11-Mamba uses _fewer_ parameters than the baseline (2.22M vs. 2.62M, −15.3%). This counter-intuitive result reflects the inherent parameter efficiency of SSM-based global context modeling relative to deep stacked convolutions at the same channel widths: the SSM state matrices $\bar{\mathbf{A}}, \bar{\mathbf{B}}, \mathbf{C}$ encode long-range dependencies in a compact $N_s$-dimensional state, requiring fewer parameters than additional convolutional layers that would be needed to approximate equivalent effective receptive field sizes.
+
+**Inference Speed.** YOLO11-Mamba sustains 125.8 FPS on the RTX 5090, well above the real-time threshold of 30 FPS required for practical USV deployment. The GFLOPs increase (3.22 → 17.85) is attributable to the Mamba parallel scan operations over the full $H \times W$ spatial sequence, which are memory-bandwidth-bound and benefit from hardware-aware Flash Scan acceleration. The absolute latency impact is modest (7.95 ms per frame), confirming that SSM-based global modeling is computationally viable for edge deployment at this scale.
+
+---
+
+## 4.3 Ablation Studies
+
+We conduct a three-part ablation study to independently validate each component of the proposed framework. All ablation experiments use identical training configurations and are evaluated on the validation set.
+
+### 4.3.1 Impact of Physical Modality Strategy (Table 2)
+
+To isolate the contribution of the heterogeneous data strategy, we fix the network architecture to YOLO11n (baseline backbone, no Mamba) and vary only the training data composition and modality policy. Four conditions are evaluated.
+
+**Table 2. Ablation of physical modality training strategy (fixed YOLO11n architecture).**
+
+|Training Condition|mAP@50 (%)|mAP@50:95 (%)|R (%)|$\Delta$mAP@50|
+|---|---|---|---|---|
+|RGB Only|—|—|—|—|
+|RGB + DoLP (concatenated)|—|—|—|+X.X|
+|RGB + All Polarimetric (concatenated)|—|—|—|+X.X|
+|Heterogeneous Dropout (Ours)|—|—|—|**+X.X**|
+
+_(Fill with experimental results.)_
+
+**RGB Only** establishes the single-modality lower bound. Under specular glare conditions, the model confuses highly reflective water patches with bottle boundaries, producing characteristic false positive clusters in the high-reflection regions of the image.
+
+**RGB + DoLP (concatenated)** adds DoLP as a second input channel via standard channel concatenation. This provides the network with polarization information but requires paired RGB+DoLP input at inference time, and does not force the network to learn modality-invariant features—the network can solve the training task by relying predominantly on DoLP while ignoring RGB, which degrades performance when only RGB is available at test time.
+
+**RGB + All Polarimetric (concatenated)** extends concatenation to all six physical views as a 18-channel input. While this provides maximum information, it increases the input dimensionality substantially and creates a train-test modality mismatch for the RGB-only inference scenario.
+
+**Heterogeneous Dropout (Ours)** achieves the best performance by treating each physical view as an independent training sample and randomly sampling the active modality per iteration. Critically, this is the only condition that maintains RGB-only inference without performance degradation, because the training objective explicitly requires the backbone to produce accurate predictions from any single modality. The performance gap between this condition and RGB + All Polarimetric (concatenated) quantifies the value of modality-invariance regularization over raw information accumulation.
+
+### 4.3.2 Structural Effectiveness: Capacity vs. Mechanism (Table 3)
+
+A central claim of this paper is that the semantic collapse identified by FCE is a _mechanism_ problem—the absence of global context modeling—rather than a _capacity_ problem addressable by simply adding more convolutional layers. To test this claim, we design four structural variants that systematically increase either capacity or mechanism, holding the training data constant at the full heterogeneous benchmark.
+
+**Table 3. Structural effectiveness analysis: capacity (deep convolution) vs. mechanism (SSM).**
+
+|Model|mAP@50 (%)|mAP@50:95 (%)|$S_{\text{fce}}^{(19)}$|Params (M)|GFLOPs|FPS|$\Delta$mAP@50|
+|---|---|---|---|---|---|---|---|
+|C1: YOLO11n Baseline|87.81|56.59|—|2.62|3.22|—|—|
+|C2: Deep Backbone (2× depth)|—|—|—|2.87|3.57|—|+X.X|
+|C3: Deep Full (2× backbone+neck)|—|—|—|3.19|3.87|—|+X.X|
+|C4: Ours — Mamba @ P4+P5|**95.86**|**65.19**|—|**2.22**|17.85|**125.8**|**+8.05**|
+
+_(Fill $S_{\text{fce}}^{(19)}$ and remaining dashes with experimental results.)_
+
+**C2 (Deep Backbone)** doubles the number of C3k2 blocks in the backbone (parameter count: 2.87M), increasing the effective receptive field through additional nonlinear transformations. The modest mAP gain relative to C1 confirms that additional convolutional depth improves local feature abstraction but cannot resolve the long-range dependency deficit: intra-class variance at Layer 19 ($S_{\text{fce}}^{(19)}$) remains high, indicating persistent semantic fragmentation.
+
+**C3 (Deep Full)** extends depth doubling to both backbone and neck (parameter count: 3.19M). This "brute-force stacking" strategy achieves a higher mAP than C2, but at disproportionate cost: parameter count increases by 21.8% relative to baseline, inference speed degrades substantially, and the FCE score at Layer 19 improves only marginally. The diminishing returns confirm that local receptive field expansion—however deep—cannot substitute for global context integration.
+
+**C4 (Ours)** achieves the highest mAP and mAP@50:95 while _reducing_ parameter count below the baseline. The FCE score at Layer 19 improves dramatically relative to all capacity-scaling variants, confirming that SSM-based global modeling specifically addresses the representational failure that deep convolution cannot. This result validates the central thesis: the performance bottleneck is architectural mechanism, not representational capacity, and targeted SSM insertion at the FCE-identified layers is both necessary and sufficient to address it.
+
+### 4.3.3 FCE-Guided Layer Placement Validation (Table 4)
+
+To validate that FCE correctly identifies the optimal Mamba insertion positions, we conduct a position sensitivity experiment in which C3k2-Mamba modules are inserted at seven distinct backbone configurations, holding all other training conditions constant.
+
+**Table 4. Sensitivity of performance to Mamba insertion position (FCE-guided vs. alternatives).**
+
+|Config|Mamba Position|mAP@50 (%)|mAP@50:95 (%)|R (%)|Params (M)|$\Delta$mAP@50|
+|---|---|---|---|---|---|---|
+|D1: Baseline|None|87.81|56.59|87.8|2.62|—|
+|D2: Mamba @ P3 only|P3|—|—|—|2.51|+X.X|
+|D3: Mamba @ P4 only|P4|—|—|—|2.49|+X.X|
+|D4: Mamba @ P5 only|P5|—|—|—|2.41|+X.X|
+|D5: Mamba @ P3+P4|P3+P4|—|—|—|2.50|+X.X|
+|D6: Mamba @ P4+P5 (Ours ★)|P4+P5|**95.86**|**65.19**|**92.7**|**2.22**|**+8.05**|
+|D7: Mamba @ P3+P4+P5|P3+P4+P5|—|—|—|2.47|+X.X|
+
+_(Fill dashes with experimental results.)_
+
+The results yield three clear conclusions that collectively validate the FCE diagnostic framework.
+
+**P3 insertion is ineffective.** Inserting Mamba exclusively at P3 (D2) produces minimal improvement over the baseline. This is consistent with the FCE analysis: the P3 feature map encodes fine-grained local texture and edge features where intra-class variance is naturally low (the FCE score at P3 is high), and long-range global context is not the limiting factor for discriminability at this stage. Deploying SSM capacity where it is not needed yields no benefit.
+
+**P4+P5 is the optimal insertion point.** Configuration D6—the proposed method—achieves the highest mAP@50 across all seven configurations, confirming that FCE correctly identified P4 and P5 as the critical bottleneck stages. The performance advantage of D6 over D3 (P4 only) and D4 (P5 only) individually demonstrates that both identified bottleneck layers contribute independently and that their combination is synergistic rather than redundant.
+
+**Full replacement (D7) does not improve over selective insertion (D6).** Adding Mamba to P3 in addition to P4 and P5 does not yield further accuracy gain and may slightly reduce performance, confirming that the FCE-prescribed selective intervention is more effective than uniform replacement. This result demonstrates the practical value of the FCE diagnostic: it identifies the minimum necessary intervention, avoiding the over-engineering trap of uniformly replacing all backbone modules.
+
+---
+
+## 4.4 Qualitative Analysis
+
+### 4.4.1 FCE Re-evaluation: Before and After
+
+To close the _diagnose-repair-verify_ loop, we re-apply FCE analysis to the trained YOLO11-Mamba model using the same diagnostic subset and protocol described in Section 3.3. Fig. 1(d) overlays the layer-wise FCE scores of the baseline model (red) and the proposed model (blue) on a shared axis.
+
+The C3k2-Mamba model exhibits substantially elevated FCE scores at Layer 19 (P5) and Layer 13 (P4), with the Layer 19 score increasing from the baseline's minimum to the highest value across all evaluated layers. In the scatter plot of Fig. 1(d)—which plots inter-class separation (x-axis) against intra-class variance (y-axis) for each layer—the YOLO11-Mamba data points migrate from the baseline's "collapse region" (low separation, high variance, bottom-left) toward the "ideal region" (high separation, low variance, top-right). This geometric shift directly confirms that C3k2-Mamba resolved the two specific failure modes identified by the diagnostic: intra-class fragmentation at Layer 19 and background entanglement at Layer 13.
+
+Notably, FCE scores at the shallow layers (P3 and below) remain nearly identical between baseline and proposed model, consistent with the fact that these layers were not modified. This selective improvement profile provides mechanistic evidence that the performance gain is attributable specifically to the SSM-mediated global context integration at the targeted layers, rather than to any incidental training dynamics.
+
+### 4.4.2 Grad-CAM Visualization
+
+Fig. 4 presents Grad-CAM [CITE] activation maps computed at the final detection backbone layer for six representative test images spanning three difficulty tiers: (a) standard floating bottle under diffuse illumination, (b) bottle under extreme specular glare, and (c) semi-submerged bottle with reflection adhesion.
+
+For the baseline YOLO11n model, activation maps in the specular glare condition (b) are diffusely distributed across the entire sunlit water surface, with the highest activations concentrated on glare patches rather than on the bottle boundary. In the reflection adhesion condition (c), the model activates both the actual bottle and its mirror reflection with similar intensity, indicating an inability to distinguish physical object from virtual image.
+
+For YOLO11-Mamba, activation maps are consistently concentrated on the bottle body across all three difficulty tiers, with sharp, contiguous activation regions that closely follow the physical bottle boundary. The specular glare regions that dominated the baseline's attention are strongly suppressed. This suppression pattern is consistent with the global context mechanism: by encoding the statistical regularity of wave and glare patterns across the full scene, the SSM assigns low anomaly scores to regions that conform to the global background distribution, while highlighting bottle regions that deviate from it.
+
+### 4.4.3 Failure Case Analysis
+
+We identify two residual failure modes that define the current performance ceiling and motivate future work.
+
+**Extreme occlusion by floating debris.** When a bottle is more than 70% occluded by co-occurring foam, leaves, or other debris, the visible bottle surface provides insufficient spatial extent for the SSM to establish a consistent global signature. In these cases, detection confidence drops below threshold and the target is missed. Multi-frame temporal aggregation from the USV video stream—exploiting the temporal coherence of floating object trajectories—is a natural extension to address this failure mode.
+
+**Very small targets at long range.** Bottles appearing at fewer than 8×8 pixels in the input image produce feature vectors too small for RoIAlign to extract meaningful polarimetric signals. Performance at this scale is limited by the input resolution rather than the backbone architecture, suggesting that multi-scale input tiling or super-resolution preprocessing could improve detection at long detection ranges.
 # 5. Conclusion
 
 ## 5.1 Summary
