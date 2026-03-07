@@ -60,26 +60,9 @@
               "icon": "lucide-file",
               "title": "引言和摘要：YOLO-FCE"
             }
-          },
-          {
-            "id": "8eb60e4dbe75282b",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "未命名.canvas",
-                "viewState": {
-                  "x": 0,
-                  "y": 0,
-                  "zoom": 0
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "未命名"
-            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -260,10 +243,10 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "8eb60e4dbe75282b",
+  "active": "3d6f31cdeee6412d",
   "lastOpenFiles": [
-    "未命名 1.md",
     "未命名.canvas",
+    "未命名 1.md",
     "YOLO训练/12-09.md",
     "YOLO训练/assets/module/file-20251219124902972.png",
     "YOLO训练/assets/12-09/file-20251209230019217.png",
