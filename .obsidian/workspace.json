@@ -47,10 +47,14 @@
             "id": "36ca44a2002b0fd3",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "water_surface_small_object_detection_notes.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "water_surface_small_object_detection_notes"
             }
           }
         ],
@@ -235,7 +239,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "3d6f31cdeee6412d",
+  "active": "36ca44a2002b0fd3",
   "lastOpenFiles": [
     "未命名.canvas",
     "未命名 1.md",
