@@ -1,0 +1,20 @@
+{
+  "id": "conv-1772961731277-a11ddljzn",
+  "title": "Explain model identity",
+  "titleGenerationStatus": "success",
+  "createdAt": 1772961731280,
+  "updatedAt": 1772962395121,
+  "lastResponseAt": 1772962395121,
+  "sessionId": "2f1c10be-f1bd-4221-8720-7a0835835b36",
+  "sdkSessionId": "2f1c10be-f1bd-4221-8720-7a0835835b36",
+  "currentNote": "water_surface_small_object_detection_notes.md",
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 99,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 45440,
+    "contextWindow": 200000,
+    "contextTokens": 45539,
+    "percentage": 23
+  }
+}

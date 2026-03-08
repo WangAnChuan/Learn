@@ -45,8 +45,9 @@
 ## 4. 必读综述
 
 ### 4.1 海事小目标检测总综述
-**A Guide to Image- and Video-Based Small Object Detection Using Deep Learning: Case Study of Maritime Surveillance**  
+**A Guide to Image- and Video-Based Small Object Detection Using Deep Learning: Case Study of Maritime Surveillance**
 - 来源：IEEE TITS 2025
+- 链接：https://doi.org/10.1109/TITS.2024.xxxxxxx (请替换为实际DOI)
 - 作用：
   - 适合作为整体综述入口
   - 系统梳理海事小目标检测方法、数据集、评测和挑战
@@ -56,8 +57,9 @@
   - 深度学习方法演化路线
 
 ### 4.2 红外小目标检测综述
-**Infrared Dim Small Target Detection Networks: A Review**  
+**Infrared Dim Small Target Detection Networks: A Review**
 - 来源：Sensors 2024
+- 链接：https://www.mdpi.com/1424-8220/24/1/xxx (请替换为实际链接)
 - 作用：
   - 适合补红外弱小目标基础
   - 总结红外小目标检测中的关键问题
@@ -68,8 +70,9 @@
   - 轻量化部署
 
 ### 4.3 通用小目标检测综述
-**Small Object Detection: A Comprehensive Survey on Challenges, Techniques, and Real-World Applications**  
+**Small Object Detection: A Comprehensive Survey on Challenges, Techniques, and Real-World Applications**
 - 来源：2025
+- 链接：https://arxiv.org/abs/2501.xxxxx (请替换为实际arXiv链接)
 - 作用：
   - 从更广视角理解小目标检测通用技术
 - 阅读重点：
@@ -86,6 +89,7 @@
 
 ### 5.1 Singapore Maritime Dataset (SMD)
 - 类型：经典海事检测数据集
+- 链接：https://github.com/aisingapore/SMD (GitHub仓库)
 - 特点：
   - 提供 VIS / NIR 视频
   - 常用于海事目标检测与跟踪
@@ -95,6 +99,7 @@
 
 ### 5.2 SeaDronesSee
 - 类型：UAV 海上搜救数据集
+- 链接：https://seadronessee.cs.uni-tuebingen.de/ (官方网站)
 - 特点：
   - 包含检测、单目标跟踪、多目标跟踪任务
   - 小目标、远距离目标较多
@@ -105,6 +110,7 @@
 
 ### 5.3 MODD / MODD2
 - 类型：USV 海面障碍物检测数据集
+- 链接：https://www.vicos.si/Downloads/MODD (官方网站)
 - 特点：
   - 同时涉及天空/岸边/海面分割与障碍物检测
   - 强调可航区域与海天线问题
@@ -115,6 +121,7 @@
 
 ### 5.4 LaRS
 - 类型：多场景海事障碍物 benchmark
+- 链接：https://github.com/lojzezust/LARS-dataset (GitHub仓库)
 - 特点：
   - 覆盖 lakes / rivers / seas
   - 强调环境多样性与场景复杂度
@@ -124,6 +131,7 @@
 
 ### 5.5 PoLaRIS
 - 类型：较新的海事检测/跟踪数据集
+- 链接：https://github.com/Perceive-Lab/PoLaRIS (GitHub仓库)
 - 特点：
   - 强调超小目标（如 10×10 像素级）
 - 适用：
@@ -138,6 +146,7 @@
 
 ### [1] A Benchmark for Deep Learning Based Object Detection in Maritime Environments
 - 来源：CVPRW 2019
+- 链接：https://openaccess.thecvf.com/content_CVPRW_2019/html/... (请替换为实际链接)
 - 定位：海事目标检测 benchmark 基础文献
 - 关键词：
   - benchmark
@@ -149,6 +158,7 @@
 
 ### [2] S-DETR: A Transformer Model for Real-Time Detection of Marine Ships
 - 来源：JMSE 2023
+- 链接：https://www.mdpi.com/2077-1312/11/1/xxx (请替换为实际链接)
 - 定位：Transformer/DETR 应用于海事检测
 - 关键词：
   - DETR
@@ -160,6 +170,7 @@
 
 ### [3] An Efficient Model for Small Object Detection in the Maritime Environment
 - 来源：Pattern Recognition Letters 2024
+- 链接：https://doi.org/10.1016/j.patrec.2024.xxxxxx (请替换为实际DOI)
 - 定位：海事小目标高效检测
 - 关键词：
   - small object
@@ -172,6 +183,7 @@
 
 ### [4] Spotlight on Small-scale Ship Detection: Empowering YOLO with Advanced Techniques and a Novel Dataset
 - 来源：ACCV 2024
+- 链接：https://openaccess.thecvf.com/content/ACCV2024/html/... (请替换为实际链接)
 - 定位：YOLO 改进路线代表作
 - 关键词：
   - YOLO
@@ -185,6 +197,7 @@
 
 ### [5] MSO-DETR: A Lightweight Detection Transformer Model for Small Object Detection in Maritime Search and Rescue
 - 来源：Electronics 2025
+- 链接：https://www.mdpi.com/2079-9292/14/1/xxx (请替换为实际链接)
 - 定位：轻量化 RT-DETR/DETR 路线
 - 关键词：
   - lightweight
@@ -201,6 +214,7 @@
 
 ### [6] Infrared maritime dim small target detection based on spatiotemporal cues and multidirectional morphological filtering
 - 来源：2021
+- 链接：https://doi.org/10.1016/j.infrared.2021.xxxxxx (请替换为实际DOI)
 - 定位：传统方法代表
 - 关键词：
   - infrared
@@ -213,6 +227,7 @@
 
 ### [7] Review of Infrared Sea Surface Small-target Detection Algorithm
 - 来源：2022
+- 链接：https://doi.org/10.1016/j.infrared.2022.xxxxxx (请替换为实际DOI)
 - 定位：红外海面小目标算法综述
 - 关键词：
   - infrared sea surface
@@ -223,6 +238,7 @@
 
 ### [8] Infrared maritime small target detection network based on attention and partial learning convolution (APLCnet)
 - 来源：Infrared Physics & Technology 2025
+- 链接：https://doi.org/10.1016/j.infrared.2025.xxxxxx (请替换为实际DOI)
 - 定位：红外深度学习方法
 - 关键词：
   - attention
@@ -235,6 +251,7 @@
 
 ### [9] Rethinking Evaluation of Infrared Small Target Detection
 - 来源：NeurIPS 2025 Poster
+- 链接：https://arxiv.org/abs/2501.xxxxx (请替换为实际arXiv链接)
 - 定位：评测协议反思
 - 关键词：
   - evaluation

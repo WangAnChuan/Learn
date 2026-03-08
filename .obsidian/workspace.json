@@ -218,14 +218,23 @@
               "icon": "calendar-with-checkmark",
               "title": "Calendar"
             }
+          },
+          {
+            "id": "2bc0156151436b1b",
+            "type": "leaf",
+            "state": {
+              "type": "claudian-view",
+              "state": {},
+              "icon": "bot",
+              "title": "Claudian"
+            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 7
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 496.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -236,11 +245,21 @@
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
       "bases:Create new base": false,
-      "obsidian-git:Open Git source control": false
+      "obsidian-git:Open Git source control": false,
+      "claudian:Open Claudian": false
     }
   },
-  "active": "36ca44a2002b0fd3",
+  "active": "2bc0156151436b1b",
   "lastOpenFiles": [
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962362947",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962335339",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962321450",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962247456",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962195023",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962183618",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962156969",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962119496",
+    "water_surface_small_object_detection_notes.md.tmp.8340.1772962105143",
     "未命名.canvas",
     "未命名 1.md",
     "YOLO训练/12-09.md",
@@ -255,13 +274,6 @@
     "SCI素材",
     "YOLO训练/module.md",
     "YOLO训练/assets/module",
-    "SpringBoot",
-    "YOLO训练/assets/12-09",
-    "YOLO训练/assets",
-    "YOLO训练",
-    "README.md",
-    "未命名.base",
-    "assets/README",
-    "assets"
+    "README.md"
   ]
 }
